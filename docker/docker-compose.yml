@@ -1,0 +1,72 @@
+version: "3.9"
+
+services:
+  academic-research-agent:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: academic-research-agent
+    restart: unless-stopped
+    ports:
+      - "8018:8018"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - SEMANTIC_SCHOLAR_API_KEY=${SEMANTIC_SCHOLAR_API_KEY:-}
+      - NCBI_EMAIL=${NCBI_EMAIL:-researcher@example.com}
+      - NCBI_API_KEY=${NCBI_API_KEY:-}
+      - DATA_DIR=/app/data
+      - MODELS_DIR=/app/models
+      - LOG_LEVEL=INFO
+      - PRIVACY_MODE=${PRIVACY_MODE:-false}
+    volumes:
+      - research_data:/app/data
+      - research_models:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8018/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    depends_on:
+      - ollama
+
+  # Uncomment for GPU support:
+  # academic-research-agent-gpu:
+  #   extends:
+  #     service: academic-research-agent
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+  #   environment:
+  #     - CUDA_VISIBLE_DEVICES=0
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: academic-ollama
+    restart: unless-stopped
+    ports:
+      - "11435:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    profiles:
+      - ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  research_data:
+    driver: local
+  research_models:
+    driver: local
+  ollama_models:
+    driver: local

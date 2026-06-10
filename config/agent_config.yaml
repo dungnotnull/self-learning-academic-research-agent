@@ -1,0 +1,100 @@
+agent:
+  name: academic-research-enhanced
+  version: "1.0.0"
+  log_level: INFO
+  data_dir: ./data
+  models_dir: ./models
+
+crawl:
+  max_results_per_source: 50
+  days_back_default: 7
+  rate_limit_delay: 1.0
+  sources:
+    arxiv:
+      enabled: true
+      categories: ["cs.AI", "cs.LG", "cs.CL", "cs.IR", "stat.ML"]
+      base_url: "http://export.arxiv.org/api/query"
+    semantic_scholar:
+      enabled: true
+      base_url: "https://api.semanticscholar.org/graph/v1"
+      fields: "title,authors,year,citationCount,externalIds,abstract,url"
+    pubmed:
+      enabled: true
+      base_url: "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
+      max_results: 20
+    ssrn:
+      enabled: false  # rate-limited, opt-in only
+
+citation_analysis:
+  min_citations: 5
+  pagerank_alpha: 0.85
+  top_influential: 20
+  node2vec:
+    walk_length: 30
+    num_walks: 200
+    dimensions: 128
+    p: 1
+    q: 0.5
+
+gap_detection:
+  n_clusters_default: 10
+  density_threshold: 0.45
+  min_papers_per_cluster: 3
+  max_k_search: 15
+
+synthesis:
+  max_papers_default: 15
+  min_review_words: 500
+  default_style: academic
+  styles: [academic, technical, survey, executive]
+
+llm:
+  provider: claude
+  model: claude-opus-4-8
+  fallback_provider: openai
+  fallback_model: gpt-4o
+  offline_provider: ollama
+  offline_model: llama3
+  max_tokens: 4000
+  temperature: 0.3
+  max_retries: 3
+
+hf_models:
+  bge_large:
+    model_id: BAAI/bge-large-en-v1.5
+    task: embeddings
+    batch_size: 32
+  minilm:
+    model_id: sentence-transformers/all-MiniLM-L6-v2
+    task: fast_embeddings
+    batch_size: 128
+  bart_cnn:
+    model_id: facebook/bart-large-cnn
+    task: summarization
+    max_length: 150
+    min_length: 40
+  bge_reranker:
+    model_id: BAAI/bge-reranker-large
+    task: reranking
+    top_k: 5
+  idle_unload_seconds: 600
+
+knowledge_updater:
+  schedule: "0 6 * * *"  # daily 06:00
+  daily_queries_count: 10
+  papers_per_query: 20
+  lookback_days: 3
+  brain_file: ./SECOND-KNOWLEDGE-BRAIN.md
+
+server:
+  host: 0.0.0.0
+  port: 8018
+  workers: 1
+  reload: false
+
+quality_gates:
+  min_papers_for_synthesis: 3
+  min_review_words: 500
+  min_citations_in_review: 3
+  max_papers_per_cluster: 500
+  synthesis_retry_on_fail: true

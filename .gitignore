@@ -1,0 +1,74 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Environment and secrets
+.env
+config/.env
+*.pem
+*.key
+
+# Data and models (runtime generated)
+data/
+models/
+*.db
+*.sqlite3
+*.sqlite
+
+# Logs
+*.log
+logs/
+
+# HuggingFace cache
+.cache/
+huggingface/
+
+# Node (if any tooling)
+node_modules/
+
+# Coverage and test artifacts
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Docker runtime
+docker/.env
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Upstream (keep the README but not any runtime artifacts)
+upstream/*.pyc
+
+# Build artifacts
+*.tar.gz
+*.whl
