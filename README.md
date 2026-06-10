@@ -13,7 +13,7 @@
 [![Code Style: Ruff](https://img.shields.io/badge/Code%20Style-Ruff-1857C7.svg)](https://docs.astral.sh/ruff/)
 [![Tests](https://img.shields.io/badge/Tests-40%2B%20passing-brightgreen)](tests/)
 
-[🚀 Quick Start](#-quick-start) · [📖 Documentation](#-features) · [🌐 REST API](#-rest-api) · [🐳 Docker](#-docker-deployment) · [🤝 Contributing](CONTRIBUTING.md)
+[🚀 Quick Start](#-quick-start) · [📖 Features](#-key-features) · [🌐 REST API](#-rest-api) · [🐳 Docker](#-docker-deployment) · [🤝 Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -23,7 +23,7 @@
 
 Every day at 6 AM, this agent **wakes up, crawls 200+ papers** from ArXiv, Semantic Scholar, PubMed and SSRN, **builds a citation influence graph**, **identifies underexplored research gaps**, and **synthesizes publication-quality literature reviews** — all autonomously.
 
-`
+`	ext
 ┌──────────────────────────────────────────────────────────────────┐
 │                    🔁 Daily Self-Learning Loop                    │
 │                                                                  │
@@ -44,18 +44,18 @@ Every day at 6 AM, this agent **wakes up, crawls 200+ papers** from ArXiv, Seman
 │   │  (self-updated daily, grows forever)     │                    │
 │   └─────────────────────────────────────────┘                    │
 └──────────────────────────────────────────────────────────────────┘
-`
+```text
 
 ## 🏆 Key Features
 
 | 🔬 Feature | 📋 Description | ⚡ Technology |
 |---|---|---|
-| **Multi-Source Crawling** | ArXiv + Semantic Scholar + PubMed + SSRN | iohttp async, rate-limited |
+| **Multi-Source Crawling** | ArXiv + Semantic Scholar + PubMed + SSRN | aiohttp async, rate-limited |
 | **Citation Network** | PageRank + betweenness + node2vec embeddings | NetworkX, 10K+ nodes/day |
 | **Gap Detection** | BGE-large → k-means → density → LLM explanation | HuggingFace, scikit-learn |
 | **Literature Synthesis** | 7-section review with inline citations | Claude/GPT-4o/Ollama fallback |
 | **Daily Self-Update** | 06:00 cron, 10 queries, dedup, KB append | APScheduler, SHA256 hash |
-| **Cost Tracking** | Per-call token costs in SQLite | Claude .015/1K → GPT-4o → Ollama  |
+| **Cost Tracking** | Per-call token costs in SQLite | Claude $0.015/1K → GPT-4o → Ollama $0 |
 | **Privacy Mode** | 100% offline, no cloud API calls | PRIVACY_MODE=true → Ollama only |
 | **REST API** | 11 endpoints, Pydantic schemas, Prometheus metrics | FastAPI, uvicorn |
 | **Auth & Rate Limiting** | X-API-Key header, 60 req/min/IP, CORS | Middleware |
@@ -63,7 +63,7 @@ Every day at 6 AM, this agent **wakes up, crawls 200+ papers** from ArXiv, Seman
 
 ## 📊 Architecture Deep Dive
 
-`
+`	ext
                         User Query / Daily Cron (06:00)
                                       │
                     ┌─────────────────┴─────────────────┐
@@ -76,7 +76,7 @@ Every day at 6 AM, this agent **wakes up, crawls 200+ papers** from ArXiv, Seman
                     │  │    Module Pipeline   │           │
                     │  │                       │           │
                     │  │  ┌──────────────┐    │           │
-                    │  │  │ 📥 PaperCrawler│    │           │
+                    │  │  │ 📥 PaperCrawler │    │           │
                     │  │  │ ArXiv · S2 ·  │    │           │
                     │  │  │ PubMed · SSRN  │    │           │
                     │  │  └──────┬───────┘    │           │
@@ -113,7 +113,7 @@ Every day at 6 AM, this agent **wakes up, crawls 200+ papers** from ArXiv, Seman
                     │         │ │ BART    │ │ SSRN        │
                     │         │ │ Reranker│ │             │
                     └─────────┘ └─────────┘ └─────────────┘
-`
+```
 
 ## 🚀 Quick Start
 
@@ -125,13 +125,13 @@ cd self-learning-academic-research-agent
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-`
+```text
 
 ### 🔑 Configure API Keys
 
 `ash
 cp config/.env.example config/.env
-`
+```
 
 Edit config/.env with your keys:
 
@@ -148,93 +148,23 @@ SEMANTIC_SCHOLAR_API_KEY=...
 # Required for PubMed
 NCBI_EMAIL=you@example.com
 
-# Privacy mode — forces local Ollama only (optional)
+# Privacy mode - forces local Ollama only (optional)
 PRIVACY_MODE=false
-`
+```text
 
 ### 🖥️ CLI Usage
 
-<table>
-<tr><td>📝</td><td><b>Crawl papers</b></td></tr>
-<tr><td colspan="2">
-
-`ash
-python -m agent.main crawl \
-  --query "transformer attention mechanisms" \
-  --sources arxiv,semantic_scholar \
-  --max-results 50 --days-back 7
-`
-
-</td></tr>
-<tr><td>🔍</td><td><b>Citation analysis</b></td></tr>
-<tr><td colspan="2">
-
-`ash
-python -m agent.main analyze --topic "deep learning" --min-citations 5
-`
-
-</td></tr>
-<tr><td>🎯</td><td><b>Find research gaps</b></td></tr>
-<tr><td colspan="2">
-
-`ash
-python -m agent.main gaps --topic "retrieval augmented generation" --n-clusters 8
-`
-
-</td></tr>
-<tr><td>📝</td><td><b>Generate literature review</b></td></tr>
-<tr><td colspan="2">
-
-`ash
-python -m agent.main synthesize \
-  --query "RLHF for language models" \
-  --max-papers 15 \
-  --style academic \
-  --output review.md
-`
-
-</td></tr>
-<tr><td>🧠</td><td><b>Update knowledge base</b></td></tr>
-<tr><td colspan="2">
-
-`ash
-python -m agent.main update-knowledge
-`
-
-</td></tr>
-<tr><td>🌐</td><td><b>Start REST API server</b></td></tr>
-<tr><td colspan="2">
-
-`ash
-python -m agent.main serve --host 0.0.0.0 --port 8018 --start-scheduler
-`
-
-</td></tr>
-<tr><td>💡</td><td><b>Generate embeddings</b></td></tr>
-<tr><td colspan="2">
-
-`ash
-python -m agent.main embed --texts "transformer attention,retrieval augmented generation" --model-key bge-large
-`
-
-</td></tr>
-<tr><td>💰</td><td><b>LLM cost report</b></td></tr>
-<tr><td colspan="2">
-
-`ash
-python -m agent.main cost-report
-`
-
-</td></tr>
-<tr><td>📊</td><td><b>Agent status</b></td></tr>
-<tr><td colspan="2">
-
-`ash
-python -m agent.main status
-`
-
-</td></tr>
-</table>
+| Command | Description |
+|:---|:---|
+| 📥 **Crawl papers** | python -m agent.main crawl --query "transformer attention" --sources arxiv,semantic_scholar |
+| 🔍 **Citation analysis** | python -m agent.main analyze --topic "deep learning" --min-citations 5 |
+| 🎯 **Find research gaps** | python -m agent.main gaps --topic "retrieval augmented generation" --n-clusters 8 |
+| 📝 **Synthesize review** | python -m agent.main synthesize --query "RLHF" --style academic --output review.md |
+| 🧠 **Update knowledge** | python -m agent.main update-knowledge |
+| 🌐 **Start API server** | python -m agent.main serve --port 8018 --start-scheduler |
+| 💡 **Generate embeddings** | python -m agent.main embed --texts "text1,text2" --model-key bge-large |
+| 💰 **LLM cost report** | python -m agent.main cost-report |
+| 📊 **Agent status** | python -m agent.main status |
 
 ### 🐳 Docker Deployment
 
@@ -246,7 +176,7 @@ docker-compose up -d
 
 # With Ollama for offline/privacy mode:
 docker-compose --profile ollama up -d
-`
+```
 
 ## 🌐 REST API
 
@@ -264,7 +194,7 @@ Base URL: http://localhost:8018 — Interactive docs at http://localhost:8018/do
 | GET | /api/v1/cost | 💰 LLM API cost report |
 | GET | /api/v1/status | 📊 Agent status and DB stats |
 | POST | /api/v1/embeddings | 🧮 Get BGE-large embeddings |
-| POST | /api/v1/embeddings/batch | 📦 Batch embedding endpoint |
+| POST | /api/v1/embeddings/batch | 📦 Batch embedding by DOI |
 | GET | /metrics | 📈 Prometheus-format metrics |
 
 > 🔒 **Authentication**: Set AGENT_API_KEY env var to require X-API-Key header on all endpoints.
@@ -282,9 +212,10 @@ curl -X POST http://localhost:8018/api/v1/synthesize \
     "max_papers": 15,
     "style": "academic"
   }'
-`
+```text
 
 Response:
+
 `json
 {
   "query": "retrieval augmented generation",
@@ -296,7 +227,7 @@ Response:
   "paper_count": 15,
   "llm_provider_used": "claude"
 }
-`
+```
 
 </details>
 
@@ -310,7 +241,7 @@ curl -X POST http://localhost:8018/api/v1/embeddings \
     "texts": ["transformer attention mechanism", "retrieval augmented generation"],
     "model_key": "bge-large"
   }'
-`
+```text
 
 </details>
 
@@ -324,28 +255,29 @@ curl -X POST http://localhost:8018/api/v1/embeddings \
 | PRIVACY_MODE | alse | 🔒 	rue = Ollama only, no cloud APIs |
 | AGENT_API_KEY | — | 🔒 API authentication key |
 | CORS_ORIGINS | * | 🌐 Comma-separated allowed origins |
+| RATE_LIMIT_REQUESTS | 60 | ⏱️ Requests per minute per IP |
 | DATA_DIR | ./data | 📂 SQLite database directory |
 | MODELS_DIR | ./models | 🤗 HuggingFace model cache |
 | LOG_LEVEL | INFO | 📊 Logging verbosity |
-| LOG_DIR | ./data/logs | 📝 Log file directory |
+| LOG_DIR | ./data/logs | 📝 Log file directory (rotating, 10MB) |
 | AGENT_PORT | 8018 | 🚪 REST API port |
 
 See [config/agent_config.yaml](config/agent_config.yaml) for full configuration.
 
 ## 🤗 HuggingFace Models
 
-| Model | Task | Size | MTEB | Auto-loaded |
-|-------|------|------|------|:-----------:|
-| BAAI/bge-large-en-v1.5 | Dense embeddings | 1.3 GB | 64.23 | ✅ Lazy |
-| sentence-transformers/all-MiniLM-L6-v2 | Fast embeddings | 80 MB | 56.3 | ✅ Lazy |
-| acebook/bart-large-cnn | Summarization | 1.6 GB | 44.16 ROUGE-L | ✅ Lazy |
-| BAAI/bge-reranker-large | Cross-encoder reranking | 1.1 GB | +0.08 NDCG | ✅ Lazy |
+| Model | Task | Size | MTEB | Lazy |
+|-------|------|------|------|:----:|
+| BAAI/bge-large-en-v1.5 | Dense embeddings | 1.3 GB | 64.23 | ✅ |
+| sentence-transformers/all-MiniLM-L6-v2 | Fast embeddings | 80 MB | 56.3 | ✅ |
+| acebook/bart-large-cnn | Summarization | 1.6 GB | 44.16 ROUGE-L | ✅ |
+| BAAI/bge-reranker-large | Cross-encoder reranking | 1.1 GB | +0.08 NDCG | ✅ |
 
 > 💡 Models load on first use and auto-unload after 10 minutes idle. **TF-IDF/heuristic fallbacks** ensure the agent works even without GPU or transformers.
 
 ## 🤖 LLM Provider Chain
 
-`
+`	ext
 ANTHROPIC_API_KEY set?  ──▶  🟣 claude-opus-4-8 (primary, .015/1K in)
        │ (no key / rate limit)
 OPENAI_API_KEY set?     ──▶  🟢 gpt-4o (fallback, .005/1K in)
@@ -353,55 +285,55 @@ OPENAI_API_KEY set?     ──▶  🟢 gpt-4o (fallback, .005/1K in)
 OLLAMA_BASE_URL set?    ──▶  🟠 llama3 (offline, )
        │ (unavailable)
 SECOND-KNOWLEDGE-BRAIN  ──▶  📚 cached knowledge response
-`
+```
 
 > 💰 Cost tracking per call stored in SQLite. Run python -m agent.main cost-report to see totals.
 
 ## 📁 Project Structure
 
-`
+`	ext
 self-learning-academic-research-agent/
-├── 📂 agent/
+├── agent/
 │   ├── __init__.py
 │   ├── __main__.py                 # python -m agent entry point
-│   ├── main.py                     # CLI (Click) + FastAPI server + auth/CORS/rate-limit
-│   ├── orchestrator.py             # Core pipeline orchestration + Prometheus metrics
-│   ├── 📂 memory/
+│   ├── main.py                     # CLI + FastAPI server + auth/CORS/rate-limit
+│   ├── orchestrator.py             # Pipeline orchestration + Prometheus metrics
+│   ├── memory/
 │   │   ├── __init__.py
-│   │   └── memory_manager.py       # SQLite persistence (6 tables + migrations)
-│   └── 📂 modules/
+│   │   └── memory_manager.py       # SQLite (6 tables + schema migrations)
+│   └── modules/
 │       ├── __init__.py
 │       ├── paper_crawler.py         # Async multi-source paper retrieval
 │       ├── citation_analyzer.py    # NetworkX + PageRank + node2vec
 │       ├── research_gap_finder.py  # BGE-large → k-means → density → LLM
 │       └── synthesis_engine.py     # Claude 7-section review + quality gates
-├── 📂 tools/
+├── tools/
 │   ├── __init__.py
-│   ├── llm_client.py              # Claude → OpenAI → Ollama fallback + cost tracking
-│   ├── hf_model_manager.py        # 4 HuggingFace models + lazy load + idle unload
+│   ├── llm_client.py              # Claude → OpenAI → Ollama fallback + costs
+│   ├── hf_model_manager.py        # 4 HF models + lazy load + idle unload
 │   └── knowledge_updater.py        # Daily cron → SECOND-KNOWLEDGE-BRAIN.md
-├── 📂 config/
-│   ├── agent_config.yaml           # Full runtime configuration
+├── config/
+│   ├── agent_config.yaml           # Runtime configuration
 │   └── .env.example                # Environment variable template
-├── 📂 docker/
+├── docker/
 │   ├── Dockerfile                  # Python 3.12-slim, non-root, healthcheck
 │   └── docker-compose.yml          # Agent + optional Ollama sidecar
-├── 📂 tests/
+├── tests/
 │   ├── test_agent.py               # 40+ pytest tests (mocked)
 │   └── test-scenarios.md          # 8 integration test scenarios
-├── 📂 .github/workflows/
+├── .github/workflows/
 │   └── test.yml                    # CI: lint + test on push/PR
 ├── SECOND-KNOWLEDGE-BRAIN.md      # 🧠 Self-updating knowledge base
-├── CLAUDE.md                      # Agent identity & architecture docs
+├── CLAUDE.md                      # Agent identity & architecture
 ├── PROJECT-detail.md              # Full technical specification
 ├── requirements.txt               # Pinned dependencies with upper bounds
 ├── LICENSE                        # MIT
 ├── CONTRIBUTING.md                 # PR guidelines, commit conventions
-├── CODE_OF_CONDUCT.md             # Contributor Covenant v2.1
+├── CODE_OF_CONDUCT.md              # Contributor Covenant v2.1
 ├── SECURITY.md                    # Vulnerability disclosure
 ├── CHANGELOG.md                   # Version history
 └── README.md                      # This file
-`
+```text
 
 ## 📈 Comparison with Upstream
 
@@ -442,7 +374,7 @@ pytest tests/test_agent.py -v --tb=short
 # Lint
 pip install ruff
 ruff check agent/ tools/ --fix
-`
+```
 
 > 40+ tests covering PaperCrawler, CitationAnalyzer, ResearchGapFinder, SynthesisEngine, MemoryManager, LLMClient, HFModelManager, integration flows, and CLI commands — all with mocked dependencies.
 
