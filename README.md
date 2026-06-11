@@ -23,7 +23,7 @@
 
 Every day at 6 AM, this agent **wakes up, crawls 200+ papers** from ArXiv, Semantic Scholar, PubMed and SSRN, **builds a citation influence graph**, **identifies underexplored research gaps**, and **synthesizes publication-quality literature reviews** — all autonomously.
 
-`	ext
+```
 ┌──────────────────────────────────────────────────────────────────┐
 │                    🔁 Daily Self-Learning Loop                    │
 │                                                                  │
@@ -44,7 +44,7 @@ Every day at 6 AM, this agent **wakes up, crawls 200+ papers** from ArXiv, Seman
 │   │  (self-updated daily, grows forever)     │                    │
 │   └─────────────────────────────────────────┘                    │
 └──────────────────────────────────────────────────────────────────┘
-```text
+```
 
 ## 🏆 Key Features
 
@@ -63,7 +63,7 @@ Every day at 6 AM, this agent **wakes up, crawls 200+ papers** from ArXiv, Seman
 
 ## 📊 Architecture Deep Dive
 
-`	ext
+```
                         User Query / Daily Cron (06:00)
                                       │
                     ┌─────────────────┴─────────────────┐
@@ -119,23 +119,23 @@ Every day at 6 AM, this agent **wakes up, crawls 200+ papers** from ArXiv, Seman
 
 ### 📦 Installation
 
-`ash
+```
 git clone https://github.com/dungnotnull/self-learning-academic-research-agent.git
 cd self-learning-academic-research-agent
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-```text
+```
 
 ### 🔑 Configure API Keys
 
-`ash
+```
 cp config/.env.example config/.env
 ```
 
 Edit config/.env with your keys:
 
-`ash
+```
 # Required for Claude synthesis
 ANTHROPIC_API_KEY=sk-ant-...
 
@@ -150,7 +150,7 @@ NCBI_EMAIL=you@example.com
 
 # Privacy mode - forces local Ollama only (optional)
 PRIVACY_MODE=false
-```text
+```
 
 ### 🖥️ CLI Usage
 
@@ -168,7 +168,7 @@ PRIVACY_MODE=false
 
 ### 🐳 Docker Deployment
 
-`ash
+```
 cd docker/
 cp ../config/.env.example .env
 # Edit .env with your API keys
@@ -203,7 +203,7 @@ Base URL: http://localhost:8018 — Interactive docs at http://localhost:8018/do
 <details>
 <summary>📤 Example: Synthesize a literature review</summary>
 
-`ash
+```
 curl -X POST http://localhost:8018/api/v1/synthesize \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-key-here" \
@@ -212,11 +212,11 @@ curl -X POST http://localhost:8018/api/v1/synthesize \
     "max_papers": 15,
     "style": "academic"
   }'
-```text
+```
 
 Response:
 
-`json
+```
 {
   "query": "retrieval augmented generation",
   "generated_at": "2026-06-10T06:00:00Z",
@@ -234,14 +234,14 @@ Response:
 <details>
 <summary>📤 Example: Get paper embeddings</summary>
 
-`ash
+```
 curl -X POST http://localhost:8018/api/v1/embeddings \
   -H "Content-Type: application/json" \
   -d '{
     "texts": ["transformer attention mechanism", "retrieval augmented generation"],
     "model_key": "bge-large"
   }'
-```text
+```
 
 </details>
 
@@ -277,7 +277,7 @@ See [config/agent_config.yaml](config/agent_config.yaml) for full configuration.
 
 ## 🤖 LLM Provider Chain
 
-`	ext
+```
 ANTHROPIC_API_KEY set?  ──▶  🟣 claude-opus-4-8 (primary, .015/1K in)
        │ (no key / rate limit)
 OPENAI_API_KEY set?     ──▶  🟢 gpt-4o (fallback, .005/1K in)
@@ -291,7 +291,7 @@ SECOND-KNOWLEDGE-BRAIN  ──▶  📚 cached knowledge response
 
 ## 📁 Project Structure
 
-`	ext
+```
 self-learning-academic-research-agent/
 ├── agent/
 │   ├── __init__.py
@@ -333,7 +333,7 @@ self-learning-academic-research-agent/
 ├── SECURITY.md                    # Vulnerability disclosure
 ├── CHANGELOG.md                   # Version history
 └── README.md                      # This file
-```text
+```
 
 ## 📈 Comparison with Upstream
 
@@ -364,7 +364,7 @@ self-learning-academic-research-agent/
 
 ## 🧪 Testing
 
-`ash
+```
 # Run all tests
 pytest tests/test_agent.py -v
 
