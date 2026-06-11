@@ -1,1 +1,1 @@
-﻿"""academic-research-enhanced — Modules package."""
+"""academic-research-enhanced — Modules package."""

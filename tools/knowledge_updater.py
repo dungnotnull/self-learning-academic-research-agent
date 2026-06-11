@@ -1,4 +1,4 @@
-﻿"""
+"""
 academic-research-enhanced â€” KnowledgeUpdater
 Self-referential daily crawler: this agent IS the knowledge crawler.
 Appends new papers to SECOND-KNOWLEDGE-BRAIN.md at 06:00 daily.

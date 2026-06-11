@@ -1,4 +1,4 @@
-﻿"""
+"""
 academic-research-enhanced — SynthesisEngine
 Multi-paper literature review synthesis using Claude API.
 """

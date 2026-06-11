@@ -1,1 +1,1 @@
-﻿"""academic-research-enhanced — Memory package."""
+"""academic-research-enhanced — Memory package."""

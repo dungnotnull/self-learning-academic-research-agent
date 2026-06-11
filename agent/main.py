@@ -1,4 +1,4 @@
-﻿"""
+"""
 academic-research-enhanced — Agent Entry Point
 CLI interface (Click) + FastAPI REST server with authentication, CORS, rate limiting, and file logging.
 """
@@ -53,7 +53,7 @@ logger = logging.getLogger("academic_agent")
 app = FastAPI(
     title="Academic Research Discovery Agent",
     description="Autonomous research paper discovery, citation analysis, gap detection, and literature synthesis.",
-    version="1.0.0",
+    version="2.0.0",
 )
 
 # CORS middleware
@@ -120,7 +120,10 @@ async def auth_and_rate_limit(request: Request, call_next):
 
     # Rate limiting on write endpoints
     write_prefixes = ("/api/v1/crawl", "/api/v1/synthesize", "/api/v1/gaps",
-                      "/api/v1/knowledge", "/api/v1/embeddings")
+                      "/api/v1/knowledge", "/api/v1/embeddings",
+                      "/api/v2/evaluate-idea", "/api/v2/plan-paper",
+                      "/api/v2/draft-intro", "/api/v2/design-figure",
+                      "/api/v2/review-paper", "/api/v2/research-workflow")
     if request.url.path.startswith(write_prefixes):
         client_ip = request.client.host if request.client else "unknown"
         if not _check_rate_limit(client_ip):
@@ -268,12 +271,25 @@ class BatchEmbeddingResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# v2.0 Research Skills Pydantic schemas
+# ---------------------------------------------------------------------------
+from agent.modules.research_skills.schemas import (
+    IdeaEvalRequest, IdeaEvalResponse,
+    TechPaperPlanRequest, BenchmarkPaperPlanRequest, PaperPlanResponse,
+    IntroDraftRequest, IntroDraftResponse,
+    FigureDesignRequest, FigureDesignResponse,
+    PaperReviewRequest, PaperReviewResponse,
+    ResearchWorkflowRequest, ResearchWorkflowResponse,
+)
+
+
+# ---------------------------------------------------------------------------
 # FastAPI endpoints
 # ---------------------------------------------------------------------------
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "academic-research-agent", "version": "1.0.0"}
+    return {"status": "ok", "service": "academic-research-agent", "version": "2.0.0"}
 
 
 @app.post("/api/v1/crawl", response_model=CrawlResponse)
@@ -466,7 +482,7 @@ async def metrics_endpoint():
         f"llm_calls_total {cost_report.get('total_calls', 0)}",
         "# HELP agent_info Agent version info",
         "# TYPE agent_info gauge",
-        f'agent_info{{version="1.0.0"}} 1',
+        f'agent_info{{version="2.0.0"}} 1',
     ]
 
     try:
@@ -721,6 +737,268 @@ def embed(texts: str, model_key: str):
     for i, (text, emb) in enumerate(zip(text_list, embeddings)):
         click.echo(f"\n[{i+1}] \"{text[:60]}{'...' if len(text) > 60 else ''}\"")
         click.echo(f"    Dimensions: {len(emb)}, Norm: {sum(x**2 for x in emb)**0.5:.4f}")
+
+
+
+
+# ===========================================================================
+# v2.0 Research Skills Endpoints
+# ===========================================================================
+
+@app.post("/api/v2/evaluate-idea", response_model=IdeaEvalResponse)
+async def evaluate_idea_endpoint(req: IdeaEvalRequest):
+    """Evaluate a research idea using the five-dimension framework (Higher/Faster/Stronger/Cheaper/Broader)."""
+    orch = _get_orchestrator()
+    try:
+        result = await orch.evaluate_idea(**req.model_dump())
+        return IdeaEvalResponse(**result)
+    except Exception as exc:
+        logger.exception("Idea evaluation failed")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/v2/plan-paper/technique", response_model=PaperPlanResponse)
+async def plan_technique_paper_endpoint(req: TechPaperPlanRequest):
+    """Plan a technique paper logical skeleton using the thinking-template model."""
+    orch = _get_orchestrator()
+    try:
+        result = await orch.plan_technique_paper(**req.model_dump())
+        return PaperPlanResponse(**result)
+    except Exception as exc:
+        logger.exception("Technique paper planning failed")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/v2/plan-paper/benchmark", response_model=PaperPlanResponse)
+async def plan_benchmark_paper_endpoint(req: BenchmarkPaperPlanRequest):
+    """Plan a benchmark paper logical skeleton using the five-pillar framework."""
+    orch = _get_orchestrator()
+    try:
+        result = await orch.plan_benchmark_paper(**req.model_dump())
+        return PaperPlanResponse(**result)
+    except Exception as exc:
+        logger.exception("Benchmark paper planning failed")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/v2/draft-intro", response_model=IntroDraftResponse)
+async def draft_intro_endpoint(req: IntroDraftRequest):
+    """Draft a six-paragraph Introduction outline using the Flowchart model."""
+    orch = _get_orchestrator()
+    try:
+        result = await orch.draft_introduction(**req.model_dump())
+        return IntroDraftResponse(**result)
+    except Exception as exc:
+        logger.exception("Intro drafting failed")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/v2/design-figure", response_model=FigureDesignResponse)
+async def design_figure_endpoint(req: FigureDesignRequest):
+    """Get figure design advice for Motivated Example, Solution Overview, or Experimental Results."""
+    orch = _get_orchestrator()
+    try:
+        result = await orch.design_figure(**req.model_dump())
+        return FigureDesignResponse(**result)
+    except Exception as exc:
+        logger.exception("Figure design failed")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/v2/review-paper", response_model=PaperReviewResponse)
+async def review_paper_endpoint(req: PaperReviewRequest):
+    """Run a five-dimension pre-submission review (macro logic, writing, grammar, LaTeX, figures)."""
+    orch = _get_orchestrator()
+    try:
+        result = await orch.review_paper(**req.model_dump())
+        return PaperReviewResponse(**result)
+    except Exception as exc:
+        logger.exception("Paper review failed")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/v2/research-workflow", response_model=ResearchWorkflowResponse)
+async def research_workflow_endpoint(req: ResearchWorkflowRequest):
+    """Plan an AI-assisted research workflow with Vibe Coding/Figure/Writing rules."""
+    orch = _get_orchestrator()
+    try:
+        result = await orch.plan_research_workflow(**req.model_dump())
+        return ResearchWorkflowResponse(**result)
+    except Exception as exc:
+        logger.exception("Research workflow planning failed")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ===========================================================================
+# v2.0: Research Skills CLI Commands
+# ===========================================================================
+
+@cli.command("evaluate-idea")
+@click.option("--area", "-a", required=True, help="Research area")
+@click.option("--idea", "-i", required=True, help="Research idea description")
+@click.option("--hours", default=20, show_default=True, help="Weekly hours available")
+@click.option("--skill-depth", default="intermediate", show_default=True, help="Skill depth")
+@click.option("--compute", default="single GPU", show_default=True, help="Compute availability")
+def evaluate_idea(area: str, idea: str, hours: int, skill_depth: str, compute: str):
+    """Evaluate a research idea using the five-dimension framework."""
+    orch = _get_orchestrator()
+    async def _run():
+        result = await orch.evaluate_idea(
+            research_area=area, idea_description=idea,
+            weekly_hours=hours, skill_depth=skill_depth, compute_availability=compute,
+        )
+        click.echo(f"\n{'='*60}")
+        click.echo(f"  IDEA EVALUATION - {area}")
+        click.echo(f"{'='*60}")
+        click.echo(f"  Paper Type: {result['paper_type']}")
+        click.echo(f"  Verdict:     {result['verdict']}")
+        click.echo(f"  Disruptive:  {result['disruptive_potential']}")
+        click.echo(f"  Critical Flaw: {result['has_critical_flaw']}")
+        click.echo(f"\n  Five-Dimension Scores:")
+        for dim, score in result['dimension_scores'].items():
+            bar = '#' * score + '.' * (10 - score)
+            click.echo(f"    {dim:>10}: [{bar}] {score}/10")
+        click.echo(f"\n  Top Actions:")
+        for i, action in enumerate(result['top_three_actions'], 1):
+            click.echo(f"    {i}. {action}")
+    asyncio.run(_run())
+
+
+@cli.command("plan-paper")
+@click.option("--area", "-a", required=True, help="Research area")
+@click.option("--topic", "-t", required=True, help="Research topic")
+@click.option("--key-idea", "-k", default="", help="Key idea or method")
+@click.option("--type", "paper_type", default="technique", show_default=True,
+              type=click.Choice(["technique", "benchmark"]), help="Paper type")
+def plan_paper(area: str, topic: str, key_idea: str, paper_type: str):
+    """Plan a paper logical skeleton (technique or benchmark)."""
+    orch = _get_orchestrator()
+    async def _run():
+        if paper_type == "technique":
+            result = await orch.plan_technique_paper(research_area=area, topic=topic, key_idea=key_idea)
+        else:
+            result = await orch.plan_benchmark_paper(research_area=area, benchmark_name=topic, evaluation_gap=key_idea or "Not yet specified")
+        click.echo(f"\n{'='*60}")
+        click.echo(f"  PAPER PLAN - {area}: {topic}")
+        click.echo(f"{'='*60}")
+        click.echo(f"  Paper Type: {result['paper_type']}")
+        click.echo(f"  Positioning: {result['positioning']}")
+        click.echo(f"\n  Thinking Template:")
+        for cell, content_item in result['thinking_template'].items():
+            click.echo(f"    {cell}: {content_item[:80]}")
+        click.echo(f"\n  Consistency Checks:")
+        for check, status in result['consistency_checks'].items():
+            icon = "PASS" if status == "pass" else "FAIL" if status == "fail" else "?"
+            click.echo(f"    [{icon}] {check}: {status}")
+        click.echo(f"\n  Next Skill: {result['next_skill']}")
+    asyncio.run(_run())
+
+
+@cli.command("draft-intro")
+@click.option("--area", "-a", required=True, help="Research area")
+@click.option("--topic", "-t", required=True, help="Paper topic")
+@click.option("--paper-type", default="Technique", show_default=True,
+              type=click.Choice(["Technique", "Benchmark"]), help="Paper type")
+@click.option("--key-idea", "-k", default="", help="Key idea or goal")
+def draft_intro(area: str, topic: str, paper_type: str, key_idea: str):
+    """Draft a six-paragraph Introduction outline."""
+    orch = _get_orchestrator()
+    async def _run():
+        result = await orch.draft_introduction(research_area=area, topic=topic, paper_type=paper_type, key_idea=key_idea)
+        click.echo(f"\n{'='*60}")
+        click.echo(f"  INTRODUCTION OUTLINE - {area}: {topic}")
+        click.echo(f"{'='*60}")
+        click.echo(f"  Paper Type: {result['paper_type']}")
+        click.echo(f"\n  Paragraphs:")
+        for para in result['paragraphs']:
+            click.echo(f"    P{para['number']}: {para['title']}")
+            for wp in para.get('writing_points', [])[:3]:
+                click.echo(f"      - {wp[:80]}")
+        click.echo(f"\n  Consistency:")
+        for check, status in result['consistency_report'].items():
+            icon = "PASS" if status == "pass" else "FAIL" if status == "fail" else "?"
+            click.echo(f"    [{icon}] {check}: {status}")
+    asyncio.run(_run())
+
+
+@cli.command("design-figure")
+@click.option("--area", "-a", required=True, help="Research area")
+@click.option("--figure-type", default="motivated-example", show_default=True,
+              type=click.Choice(["motivated-example", "solution-overview", "experimental-results"]),
+              help="Figure type")
+@click.option("--goal", default="", help="What the figure should communicate")
+def design_figure(area: str, figure_type: str, goal: str):
+    """Get figure design advice for a paper figure."""
+    orch = _get_orchestrator()
+    async def _run():
+        result = await orch.design_figure(research_area=area, figure_type=figure_type, communication_goal=goal)
+        click.echo(f"\n{'='*60}")
+        click.echo(f"  FIGURE DESIGN - {area} ({figure_type})")
+        click.echo(f"{'='*60}")
+        click.echo(f"  Paradigm: {result['paradigm_recommendation']}")
+        click.echo(f"  Primary Tool: {result['tool_suggestion_primary']}")
+        click.echo(f"  Alternative: {result['tool_suggestion_alternative']}")
+        click.echo(f"\n  Audit Results:")
+        for rule, status in result['audit_results'].items():
+            icon = "PASS" if status == "pass" else "FAIL" if status == "fail" else "?"
+            click.echo(f"    [{icon}] {rule}: {status}")
+    asyncio.run(_run())
+
+
+@cli.command("review-paper")
+@click.option("--area", "-a", required=True, help="Research area")
+@click.option("--title", default="", help="Paper title")
+@click.option("--venue", default="", help="Target venue")
+@click.option("--file", "-f", default=None, help="Path to paper text file")
+@click.option("--text", default="", help="Paper text (inline)")
+def review_paper(area: str, title: str, venue: str, file: Optional[str], text: str):
+    """Run a five-dimension pre-submission review."""
+    paper_text = text
+    if file:
+        with open(file, "r", encoding="utf-8") as fh:
+            paper_text = fh.read()
+    if not paper_text:
+        click.echo("Error: Provide paper text via --text or --file")
+        return
+    orch = _get_orchestrator()
+    async def _run():
+        result = await orch.review_paper(research_area=area, paper_title=title, target_venue=venue, paper_text=paper_text)
+        click.echo(f"\n{'='*60}")
+        click.echo(f"  PRE-SUBMISSION REVIEW - {title or 'Untitled'}")
+        click.echo(f"{'='*60}")
+        click.echo(f"  Final Score: {result['final_score']:.1f}/10")
+        click.echo(f"  Recommendation: {result['submission_recommendation']}")
+        click.echo(f"  Summary: {result['summary']}")
+        click.echo(f"\n  Top Fixes:")
+        for i, fix in enumerate(result['top_three_fixes'], 1):
+            click.echo(f"    {i}. {fix}")
+    asyncio.run(_run())
+
+
+@cli.command("research-workflow")
+@click.option("--area", "-a", required=True, help="Research area")
+@click.option("--phase", default="mixed", show_default=True,
+              type=click.Choice(["coding", "figure", "writing", "mixed"]),
+              help="Current phase")
+@click.option("--hours", default=20, show_default=True, help="Weekly hours available")
+@click.option("--venue", default="", help="Target venue")
+def research_workflow(area: str, phase: str, hours: int, venue: str):
+    """Plan an AI-assisted research workflow (Vibe Coding/Figure/Writing)."""
+    orch = _get_orchestrator()
+    async def _run():
+        result = await orch.plan_research_workflow(research_area=area, current_phase=phase, weekly_hours=hours, target_venue=venue)
+        click.echo(f"\n{'='*60}")
+        click.echo(f"  RESEARCH WORKFLOW - {area} ({phase} phase)")
+        click.echo(f"{'='*60}")
+        click.echo(f"  Primary Phase: {result['primary_phase']}")
+        click.echo(f"  Secondary Phases: {', '.join(result['secondary_phases']) or 'None'}")
+        click.echo(f"\n  Tool Recommendations:")
+        for phase_key, tools in result['tool_recommendations'].items():
+            click.echo(f"    {phase_key}: {tools.get('primary', 'N/A')} (alt: {tools.get('alternative', 'N/A')})")
+        click.echo(f"\n  Red-Line Reminders:")
+        for reminder in result['red_line_reminders'][:3]:
+            click.echo(f"    WARN: {reminder[:80]}")
+    asyncio.run(_run())
 
 
 # ---------------------------------------------------------------------------

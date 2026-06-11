@@ -1,1 +1,1 @@
-﻿"""academic-research-enhanced — Tools package."""
+"""academic-research-enhanced — Tools package."""

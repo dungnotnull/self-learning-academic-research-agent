@@ -1,4 +1,4 @@
-﻿"""
+"""
 academic-research-enhanced — ResearchGapFinder
 Identifies underexplored research areas via semantic clustering of paper embeddings.
 """

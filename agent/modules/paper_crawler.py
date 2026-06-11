@@ -1,4 +1,4 @@
-﻿"""
+"""
 academic-research-enhanced — PaperCrawler
 Multi-source academic paper retrieval: ArXiv, Semantic Scholar, PubMed, SSRN.
 """

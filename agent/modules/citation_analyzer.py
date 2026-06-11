@@ -1,4 +1,4 @@
-﻿"""
+"""
 academic-research-enhanced — CitationAnalyzer
 Builds citation network, computes PageRank, node2vec embeddings, identifies influential papers.
 """

@@ -1,4 +1,4 @@
-﻿"""
+"""
 academic-research-enhanced — ResearchMemoryManager
 SQLite-backed persistent memory for papers, citations, clusters, synthesis cache, and cost logs.
 Includes automatic schema migration on startup.
